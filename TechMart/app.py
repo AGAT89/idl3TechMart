@@ -1,9 +1,11 @@
 from flask import Flask
 from routes import routes  # Importamos el Blueprint
-from db import init_app  # Importamos la inicialización de la base de datos
+from db import DB  # Importamos la clase DB
 
 app = Flask(__name__)
-init_app(app)  # Inicializa la configuración de MySQL
+db = DB()
+conexion = db.obtener_conexion()
+
 app.register_blueprint(routes)  # Registra las rutas del Blueprint
 
 if __name__ == '__main__':

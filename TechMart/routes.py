@@ -1,6 +1,9 @@
 from flask import Blueprint, request, jsonify, render_template
-from db import mysql
+from db import DB
 from werkzeug.security import generate_password_hash, check_password_hash
+
+db = DB()
+conexion = db.obtener_conexion()
 
 routes = Blueprint('routes', __name__)
 
@@ -9,7 +12,7 @@ routes = Blueprint('routes', __name__)
 # Obtener todos los productos
 @routes.route('/productos', methods=['GET'])
 def get_productos():
-    cur = mysql.connection.cursor()
+    cur = conexion.cursor()
     cur.execute("SELECT id, nombre, descripcion, precio, stock FROM productos")
     productos = cur.fetchall()
     cur.close()
@@ -25,7 +28,7 @@ def get_productos():
 # Obtener un producto por ID
 @routes.route('/productos/<int:id>', methods=['GET'])
 def get_producto(id):
-    cur = mysql.connection.cursor()
+    cur = conexion.cursor()
     cur.execute("SELECT * FROM productos WHERE id = %s", (id,))
     producto = cur.fetchone()
     cur.close()
@@ -35,10 +38,10 @@ def get_producto(id):
 @routes.route('/productos', methods=['POST'])
 def create_producto():
     data = request.json
-    cur = mysql.connection.cursor()
+    cur = conexion.cursor()
     cur.execute("INSERT INTO productos (nombre, descripcion, precio, stock) VALUES (%s, %s, %s, %s)", 
                 (data['nombre'], data['descripcion'], data['precio'], data['stock']))
-    mysql.connection.commit()
+    conexion.commit()
     cur.close()
     return jsonify({'mensaje': 'Producto creado'}), 201
 
@@ -46,19 +49,19 @@ def create_producto():
 @routes.route('/productos/<int:id>', methods=['PUT'])
 def update_producto(id):
     data = request.json
-    cur = mysql.connection.cursor()
+    cur = conexion.cursor()
     cur.execute("UPDATE productos SET nombre=%s, descripcion=%s, precio=%s, stock=%s WHERE id=%s", 
                 (data['nombre'], data['descripcion'], data['precio'], data['stock'], id))
-    mysql.connection.commit()
+    conexion.commit()
     cur.close()
     return jsonify({'mensaje': 'Producto actualizado'})
 
 # Eliminar un producto
 @routes.route('/productos/<int:id>', methods=['DELETE'])
 def delete_producto(id):
-    cur = mysql.connection.cursor()
+    cur = conexion.cursor()
     cur.execute("DELETE FROM productos WHERE id=%s", (id,))
-    mysql.connection.commit()
+    conexion.commit()
     cur.close()
     return jsonify({'mensaje': 'Producto eliminado'})
 
@@ -68,7 +71,7 @@ def delete_producto(id):
 # Obtener todos los administradores
 @routes.route('/administradores', methods=['GET'])
 def get_administradores():
-    cur = mysql.connection.cursor()
+    cur = conexion.cursor()
     cur.execute("SELECT id, usuario, password, nombre_completo, email, telefono, creado_en FROM administradores")
     administradores = cur.fetchall()
     cur.close()
@@ -83,7 +86,7 @@ def get_administradores():
 # Obtener un administrador por ID
 @routes.route('/administradores/<int:id>', methods=['GET'])
 def get_administrador(id):
-    cur = mysql.connection.cursor()
+    cur = conexion.cursor()
     cur.execute("SELECT id, usuario, password, nombre_completo, email, telefono, creado_en FROM administradores WHERE id = %s", (id,))
     administrador = cur.fetchone()
     cur.close()
@@ -103,18 +106,19 @@ def create_administrador():
     data = request.json
     hashed_password = generate_password_hash(data['password'])  # Encriptar contraseña
     
-    cur = mysql.connection.cursor()
+    cur = conexion.cursor()
     cur.execute("INSERT INTO administradores (usuario, password, nombre_completo, email, telefono) VALUES (%s, %s, %s, %s, %s)", 
                 (data['usuario'], hashed_password, data['nombre_completo'], data['email'], data['telefono']))
-    mysql.connection.commit()
+    conexion.commit()
     cur.close()
     return jsonify({'mensaje': 'Administrador creado'}), 201
+
 
 # Actualizar un administrador
 @routes.route('/administradores/<int:id>', methods=['PUT'])
 def update_administrador(id):
     data = request.json
-    cur = mysql.connection.cursor()
+    cur = conexion.cursor()
     
     # Si se actualiza la contraseña, encriptarla
     if "password" in data:
@@ -125,16 +129,16 @@ def update_administrador(id):
         cur.execute("UPDATE administradores SET usuario=%s, nombre_completo=%s, email=%s, telefono=%s WHERE id=%s", 
                     (data['usuario'], data['nombre_completo'], data['email'], data['telefono'], id))
     
-    mysql.connection.commit()
+    conexion.commit()
     cur.close()
     return jsonify({'mensaje': 'Administrador actualizado'})
 
 # Eliminar un administrador
 @routes.route('/administradores/<int:id>', methods=['DELETE'])
 def delete_administrador(id):
-    cur = mysql.connection.cursor()
+    cur = conexion.cursor()
     cur.execute("DELETE FROM administradores WHERE id=%s", (id,))
-    mysql.connection.commit()
+    conexion.commit()
     cur.close()
     return jsonify({'mensaje': 'Administrador eliminado'})
 

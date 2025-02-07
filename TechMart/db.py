@@ -1,12 +1,16 @@
-from flask_mysqldb import MySQL
+import pymssql
 
-mysql = MySQL()  # Solo creamos la instancia, sin Flask
+class DB:
+    def __init__(self):
+        self.server = 'DbTechMart.mssql.somee.com'
+        self.database = 'DbTechMart'
+        self.username = 'usr_developer'
+        self.password = '2025+idl3'
 
-def init_app(app):
-    # Configuración de conexión con MySQL
-    app.config['MYSQL_HOST'] = 'localhost'
-    app.config['MYSQL_USER'] = 'root'  # Cambia si tienes otro usuario
-    app.config['MYSQL_PASSWORD'] = ''  # Agrega tu contraseña si es necesario
-    app.config['MYSQL_DB'] = 'gestion_productos'
-    
-    mysql.init_app(app)  # Inicializamos MySQL con la app Flask
+    def obtener_conexion(self):
+        try:
+            conexion = pymssql.connect(server=self.server, user=self.username, password=self.password, database=self.database)
+            return conexion
+        except Exception as e:
+            print(f'Error al conectar a la base de datos: {e}')
+            return None

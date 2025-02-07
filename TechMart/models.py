@@ -1,4 +1,7 @@
-from db import mysql
+from db import DB
+
+db = DB()
+conexion = db.obtener_conexion()
 
 class Producto:
     def __init__(self, id, nombre, descripcion, precio, stock):
@@ -10,7 +13,7 @@ class Producto:
 
     @staticmethod
     def obtener_todos():
-        cur = mysql.connection.cursor()
+        cur = conexion.cursor()
         cur.execute("SELECT * FROM productos")
         productos = cur.fetchall()
         cur.close()
